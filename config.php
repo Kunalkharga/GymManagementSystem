@@ -49,7 +49,7 @@ function redirect($url) {
         exit();
     }
 }
-?>
+
 // session_start();
 // define('BASE_URL', 'http://localhost/gym-saas/');
 
@@ -77,3 +77,4 @@ function redirect($url) {
 //     header("Location: $url");
 //     exit();
 // }
+?>
