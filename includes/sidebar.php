@@ -40,9 +40,11 @@ $active = basename(dirname($_SERVER['PHP_SELF']));
     </nav>
 
     <div class="absolute bottom-8 w-full px-6">
-        <a href="../logout.php" class="flex items-center gap-3 text-red-400 hover:text-red-500 px-4 py-3">
-            <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
+       <a href="../logout.php" 
+   onclick="return confirm('Are you sure you want to logout?')"
+   class="flex items-center gap-3 text-red-400 hover:text-red-500 px-4 py-3">
+    <i class="fas fa-sign-out-alt"></i> Logout
+</a>
     </div>
 </div>
 
