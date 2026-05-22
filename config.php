@@ -3,7 +3,7 @@
 session_start();
 
 // Base URL
-define('BASE_URL', 'https://gymmanagementsystem.onrender.com');
+define('BASE_URL', 'https://gymmanagementsystem-5ae0.onrender.com');
 
 // Database Credentials from Render Environment Variables
 $host = getenv('DB_HOST');
