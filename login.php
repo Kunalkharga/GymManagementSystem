@@ -4,9 +4,14 @@ require_once 'config.php';
 $success_msg = '';
 $error = '';
 
-// Show success message only from URL parameter
-if (isset($_GET['logout']) && $_GET['logout'] === 'success') {
+// Show logout success ONLY if coming from logout (and no form submission)
+if (isset($_GET['logout']) && $_GET['logout'] === 'success' && !$_POST) {
     $success_msg = "You have been logged out successfully!";
+}
+
+// Registration Success Message
+if (isset($_GET['register']) && $_GET['register'] === 'success') {
+    $success_msg = "Account created successfully! Please login.";
 }
 
 // Handle Login
@@ -18,7 +23,7 @@ if ($_POST) {
     $stmt->execute([$email]);
     $admin = $stmt->fetch();
 
-    if ($admin && $password === $admin['password']) {
+    if ($admin && password_verify($password, $admin['password'])) {
         $_SESSION['admin_id'] = $admin['id'];
         $_SESSION['gym_name'] = $admin['gym_name'];
         header("Location: dashboard/index.php");
@@ -46,10 +51,14 @@ if ($_POST) {
             <p class="text-gray-400 mt-2">Login to your Dashboard</p>
         </div>
 
-        <!-- Success Message -->
+        <!-- Success Message (Logout) -->
         <?php if(!empty($success_msg)): ?>
-            <div id="successMessage" class="bg-green-600/20 border border-green-500 text-green-400 p-4 rounded-2xl mb-6 text-center">
-                <?= htmlspecialchars($success_msg) ?>
+            <div id="successToast" class="bg-green-600/20 border border-green-500 text-green-400 p-4 rounded-2xl mb-6 text-center flex items-center gap-3 relative overflow-hidden">
+                <i class="fas fa-check-circle"></i>
+                <span><?= htmlspecialchars($success_msg) ?></span>
+                <button onclick="hideToast()" class="ml-auto text-green-300 hover:text-white">✕</button>
+                
+                <div id="progressBar" class="absolute bottom-0 left-0 h-1 bg-green-400 rounded-b-2xl transition-all duration-[3000ms]" style="width: 100%;"></div>
             </div>
         <?php endif; ?>
 
@@ -62,14 +71,14 @@ if ($_POST) {
 
         <form method="POST" class="space-y-6" autocomplete="off">
             <div>
-                <label class="block mb-2 text-sm">Email</label>
-                <input type="email" name="email" id="email" autocomplete="off"
+                <label class="block mb-2 text-sm">Email Address</label>
+                <input type="email" name="email" required 
                        class="w-full px-5 py-4 bg-gray-800 rounded-2xl border border-gray-700 focus:border-orange-500">
             </div>
             
             <div>
                 <label class="block mb-2 text-sm">Password</label>
-                <input type="password" name="password" id="password" autocomplete="new-password"
+                <input type="password" name="password" required 
                        class="w-full px-5 py-4 bg-gray-800 rounded-2xl border border-gray-700 focus:border-orange-500">
             </div>
 
@@ -79,24 +88,48 @@ if ($_POST) {
             </button>
         </form>
 
-        <p class="text-center text-xs text-gray-500 mt-8">
-            Default: admin@gymsaas.com / admin123
-        </p>
+        <div class="text-center mt-8">
+            <p class="text-gray-400">
+                Don't have an account? 
+                <a href="register.php" class="text-orange-400 hover:text-orange-500 font-semibold">
+                    Create New Gym Account
+                </a>
+            </p>
+        </div>
     </div>
 
     <script>
-        // Clear form fields
         window.onload = function() {
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
-            
-            // Remove success message from URL after showing (Clean URL)
-            if (window.location.search.includes('logout=success')) {
+            // Clear autofill
+            document.querySelector('input[name="email"]').value = '';
+            document.querySelector('input[name="password"]').value = '';
+
+            // Auto hide success message after 3 seconds
+            const toast = document.getElementById('successToast');
+            if (toast) {
+                const progressBar = document.getElementById('progressBar');
+                
                 setTimeout(() => {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                }, 1500); // Remove after 1.5 seconds
+                    progressBar.style.width = '0%';
+                }, 100);
+
+                setTimeout(() => {
+                    toast.style.transition = 'opacity 0.5s ease';
+                    toast.style.opacity = '0';
+                    setTimeout(() => {
+                        toast.style.display = 'none';
+                    }, 500);
+                }, 3000);
             }
         };
+
+        function hideToast() {
+            const toast = document.getElementById('successToast');
+            if (toast) {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.style.display = 'none', 500);
+            }
+        }
     </script>
 </body>
 </html>
