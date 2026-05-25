@@ -3,19 +3,19 @@ $active = basename(dirname($_SERVER['PHP_SELF']));
 ?>
 <!-- Mobile Top Bar -->
 <div class="lg:hidden fixed top-0 left-0 right-0 bg-gray-900 border-b border-gray-800 z-50 px-4 py-4 flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-orange-500">GYM<span class="text-white">SAAS</span></h1>
-    <button onclick="toggleMobileMenu()" class="text-3xl">
+    <h1 class="text-2xl font-bold text-orange-500">AnyTime<span class="text-white">Fitness</span></h1>
+    <button onclick="toggleMobileMenu()" class="text-3xl text-white">
         <i class="fas fa-bars"></i>
     </button>
 </div>
 
 <!-- Sidebar -->
-<div id="sidebar" class="sidebar w-64 bg-gray-900 h-screen fixed left-0 top-0 border-r border-gray-800 lg:translate-x-0 -translate-x-full transition-transform z-50">
+<div id="sidebar" class="sidebar w-64 bg-gray-900 h-screen fixed left-0 top-0 border-r border-gray-800 lg:translate-x-0 -translate-x-full transition-transform z-50 overflow-hidden">
     <div class="p-6 border-b border-gray-800 flex items-center justify-between">
-        <h1 class="text-3xl font-bold text-orange-500">GYM<span class="text-white">SAAS</span></h1>
-        <button onclick="toggleMobileMenu()" class="lg:hidden text-2xl">
+        <h1 class="text-2xl font-bold text-orange-500">AnyTime<span class="text-white">Fitness</span></h1>
+        <!-- <button onclick="toggleMobileMenu()" class="lg:hidden text-2xl text-white">
             <i class="fas fa-times"></i>
-        </button>
+        </button> -->
     </div>
     
     <nav class="mt-8 px-3 space-y-1">

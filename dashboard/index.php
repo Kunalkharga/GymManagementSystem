@@ -31,7 +31,25 @@ $stmt = $pdo->prepare("SELECT m.*, p.plan_name
                        ORDER BY m.created_at DESC LIMIT 5");
 $stmt->execute([$admin_id]);
 $recentMembers = $stmt->fetchAll();
+
+// Set timezone to Nepal Standard Time (NST)
+date_default_timezone_set('Asia/Kathmandu'); // For Nepal timezone
+
+// Today's date for display
+$today = new DateTime();
+$greeting = "";
+$hour = (int)date('G');
+if ($hour < 12) {
+    $greeting = "Good Morning";
+} elseif ($hour < 17) {
+    $greeting = "Good Afternoon";
+} else {
+    $greeting = "Good Evening";
+}
+
 ?>
+
+
 
 <?php include '../includes/header.php'; ?>
 <?php include '../includes/sidebar.php'; ?>
@@ -39,9 +57,13 @@ $recentMembers = $stmt->fetchAll();
 <div class="lg:ml-64 min-h-screen pt-16 lg:pt-0">
     <div class="p-4 lg:p-8">
         
-        <h1 class="text-3xl lg:text-4xl font-bold mb-8">
-            Welcome back, <span class="text-orange-500"><?= htmlspecialchars($_SESSION['gym_name']) ?></span> 👋
-        </h1>
+        <h1 class="text-3xl lg:text-4xl font-bold">
+                    <?= $greeting ?>
+                </h1>
+                <p class="text-gray-400 mt-2">
+                    <i class="far fa-calendar-alt mr-2"></i>
+                    <?= $today->format('l, F j, Y') ?>
+                </p><br>
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
