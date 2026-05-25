@@ -106,6 +106,12 @@ if ($_POST) {
                     <input type="tel" name="phone" required placeholder="Phone Number *"
                         class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
                 </div>
+                 <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Address</label>
+                        <textarea name="address" rows="2" 
+                                  class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white placeholder-gray-500 transition-colors resize-none"
+                                  placeholder="Street, City, State, Postal Code"></textarea>
+                    </div>
 
                 <!-- Emergency -->
                 <div class="space-y-5">
