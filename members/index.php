@@ -94,6 +94,42 @@ $members = $stmt->fetchAll();
             </div>
         <?php endif; ?>
 
+        <!-- Pending Registrations -->
+        <?php
+        $pending = $pdo->query("SELECT * FROM members WHERE admin_id = $admin_id AND status = 'pending' ORDER BY created_at DESC")->fetchAll();
+
+        if (count($pending) > 0):
+            ?>
+            <div class="bg-amber-900/30 border border-amber-500 rounded-3xl p-6 mb-8">
+                <h2 class="text-amber-400 font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-clock"></i> Pending Approvals (<?= count($pending) ?>)
+                </h2>
+
+                <div class="space-y-4">
+                    <?php foreach ($pending as $m): ?>
+                        <div
+                            class="bg-gray-900 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                                <p class="font-semibold"><?= htmlspecialchars($m['full_name']) ?></p>
+                                <p class="text-sm text-gray-400"><?= $m['phone'] ?> •
+                                    <?= date('d M Y', strtotime($m['created_at'])) ?></p>
+                            </div>
+                            <div class="flex gap-3">
+                                <a href="approve.php?id=<?= $m['id'] ?>"
+                                    class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-xl text-sm font-medium">
+                                    Approve
+                                </a>
+                                <a href="delete.php?id=<?= $m['id'] ?>" onclick="return confirm('Reject this registration?')"
+                                    class="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-xl text-sm font-medium">
+                                    Reject
+                                </a>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <!-- Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <h1 class="text-2xl lg:text-3xl font-bold">All Members</h1>
@@ -110,9 +146,10 @@ $members = $stmt->fetchAll();
                     class="flex-1 bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-orange-500">
 
                 <select name="status" class="bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                    <option value="">All Members</option>
-                    <option value="active" <?= $status == 'active' ? 'selected' : '' ?>>Active</option>
-                    <option value="expired" <?= $status == 'expired' ? 'selected' : '' ?>>Expired</option>
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="pending">Pending Approval</option>
+                    <option value="expired">Expired</option>
                 </select>
 
                 <button type="submit"

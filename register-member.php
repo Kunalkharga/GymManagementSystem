@@ -1,28 +1,27 @@
 <?php
 require_once 'config.php';
 
-$admin_id = isset($_GET['gym']) ? (int) $_GET['gym'] : 0;
+$admin_id = isset($_GET['gym']) ? (int)$_GET['gym'] : 0;
 $error = '';
 $success = false;
 
 if ($admin_id == 0) {
-    die("<div style='padding:50px;text-align:center;color:red;font-size:20px;'>❌ Invalid QR Code. Please scan again.</div>");
+    die("<h1 style='color:red;text-align:center;padding:50px;'>Invalid QR Code</h1>");
 }
 
-// Get gym name for better UX
+// Get gym name
 $stmt = $pdo->prepare("SELECT gym_name FROM admins WHERE id = ?");
 $stmt->execute([$admin_id]);
 $gym = $stmt->fetch();
 $gym_name = $gym ? $gym['gym_name'] : 'AnyTimeFitness';
 
-$plans = $pdo->query("SELECT * FROM membership_plans WHERE admin_id = $admin_id ORDER BY price ASC")->fetchAll();
+$plans = $pdo->query("SELECT * FROM membership_plans WHERE admin_id = $admin_id")->fetchAll();
 
 if ($_POST) {
     $photo = '';
     if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
         $target_dir = "uploads/members/";
-        if (!is_dir($target_dir))
-            mkdir($target_dir, 0755, true);
+        if (!is_dir($target_dir)) mkdir($target_dir, 0755, true);
         $photo = time() . '_' . basename($_FILES['photo']['name']);
         move_uploaded_file($_FILES['photo']['tmp_name'], $target_dir . $photo);
     }
@@ -35,14 +34,14 @@ if ($_POST) {
         (admin_id, full_name, phone, address, gender, age, photo, membership_plan_id, start_date, expiry_date,
          emergency_contact, emergency_phone, height, weight, goal, medical_conditions, blood_group, status, registration_type) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(?, INTERVAL ? MONTH), ?, ?, ?, ?, ?, ?, ?, 'pending', 'self')");
-
+    
     $stmt->execute([
         $admin_id,
         sanitize($_POST['full_name']),
         sanitize($_POST['phone']),
         sanitize($_POST['address'] ?? ''),
         $_POST['gender'],
-        (int) $_POST['age'],
+        (int)$_POST['age'],
         $photo,
         $_POST['plan_id'],
         $_POST['start_date'],
@@ -63,35 +62,22 @@ if ($_POST) {
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration - <?= htmlspecialchars($gym_name) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
-
 <body class="bg-gray-950 text-white min-h-screen">
-
     <div class="max-w-lg mx-auto px-4 py-8">
-
-        <?php if ($success): ?>
+        <?php if($success): ?>
             <div class="text-center py-20">
                 <div class="text-7xl mb-6">🎉</div>
-                <h1 class="text-3xl font-bold mb-4">Registration Successful!</h1>
-                <p class="text-gray-400 text-lg">Thank you for registering with
-                    <strong><?= htmlspecialchars($gym_name) ?></strong>.</p>
-                <p class="text-green-400 mt-4">Your details have been submitted successfully.</p>
-                <p class="text-sm text-gray-500 mt-8">Please wait for admin approval.</p>
-
-                <button onclick="window.close()"
-                    class="mt-10 bg-orange-500 hover:bg-orange-600 px-10 py-4 rounded-2xl font-semibold text-lg">
-                    Close Window
-                </button>
+                <h1 class="text-3xl font-bold mb-4">Registration Submitted!</h1>
+                <p class="text-gray-400">Thank you for registering with <strong><?= htmlspecialchars($gym_name) ?></strong>.</p>
+                <p class="text-green-400 mt-6">Your registration is pending admin approval.</p>
             </div>
         <?php else: ?>
-
             <div class="text-center mb-10">
                 <h1 class="text-3xl font-bold text-orange-500"><?= htmlspecialchars($gym_name) ?></h1>
                 <p class="text-gray-400 mt-2">New Member Registration</p>
@@ -211,9 +197,7 @@ if ($_POST) {
                     Submit Registration
                 </button>
             </form>
-
         <?php endif; ?>
     </div>
 </body>
-
 </html>
