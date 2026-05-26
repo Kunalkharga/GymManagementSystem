@@ -19,23 +19,24 @@ $plans = $pdo->query("SELECT * FROM membership_plans WHERE admin_id = $admin_id"
 
 if ($_POST) {
     $photo = '';
-if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
-    $target_dir = "uploads/members/";
-    
-    // Create directory if not exists
-    if (!is_dir($target_dir)) {
-        mkdir($target_dir, 0755, true);
+    if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
+        $target_dir = "uploads/members/";
+        
+        // Create directory if not exists
+        if (!is_dir($target_dir)) {
+            mkdir($target_dir, 0755, true);
+        }
+        
+        $photo = time() . '_' . basename($_FILES['photo']['name']);
+        $target_file = $target_dir . $photo;
+        
+        if (move_uploaded_file($_FILES['photo']['tmp_name'], $target_file)) {
+            // Upload successful
+        } else {
+            $photo = ''; // Reset if failed
+            error_log("Upload failed: " . $_FILES['photo']['error']);
+        }
     }
-    
-    $photo = time() . '_' . basename($_FILES['photo']['name']);
-    $target_file = $target_dir . $photo;
-    
-    if (move_uploaded_file($_FILES['photo']['tmp_name'], $target_file)) {
-        // Success
-    } else {
-        $photo = ''; // Reset if failed
-    }
-}
 
     $stmt = $pdo->prepare("SELECT duration_months FROM membership_plans WHERE id = ?");
     $stmt->execute([$_POST['plan_id']]);
