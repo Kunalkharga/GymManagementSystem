@@ -27,7 +27,7 @@ $monthlyIncome = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM payments
 $stmt = $pdo->prepare("SELECT m.*, p.plan_name 
                        FROM members m 
                        LEFT JOIN membership_plans p ON m.membership_plan_id = p.id 
-                       WHERE m.admin_id = ? 
+                       WHERE m.admin_id = ? AND m.status != 'pending' 
                        ORDER BY m.created_at DESC LIMIT 5");
 $stmt->execute([$admin_id]);
 $recentMembers = $stmt->fetchAll();

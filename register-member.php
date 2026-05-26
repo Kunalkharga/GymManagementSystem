@@ -19,12 +19,23 @@ $plans = $pdo->query("SELECT * FROM membership_plans WHERE admin_id = $admin_id"
 
 if ($_POST) {
     $photo = '';
-    if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
-        $target_dir = "uploads/members/";
-        if (!is_dir($target_dir)) mkdir($target_dir, 0755, true);
-        $photo = time() . '_' . basename($_FILES['photo']['name']);
-        move_uploaded_file($_FILES['photo']['tmp_name'], $target_dir . $photo);
+if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
+    $target_dir = "uploads/members/";
+    
+    // Create directory if not exists
+    if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0755, true);
     }
+    
+    $photo = time() . '_' . basename($_FILES['photo']['name']);
+    $target_file = $target_dir . $photo;
+    
+    if (move_uploaded_file($_FILES['photo']['tmp_name'], $target_file)) {
+        // Success
+    } else {
+        $photo = ''; // Reset if failed
+    }
+}
 
     $stmt = $pdo->prepare("SELECT duration_months FROM membership_plans WHERE id = ?");
     $stmt->execute([$_POST['plan_id']]);
@@ -71,12 +82,21 @@ if ($_POST) {
 <body class="bg-gray-950 text-white min-h-screen">
     <div class="max-w-lg mx-auto px-4 py-8">
         <?php if($success): ?>
-            <div class="text-center py-20">
-                <div class="text-7xl mb-6">🎉</div>
-                <h1 class="text-3xl font-bold mb-4">Registration Submitted!</h1>
-                <p class="text-gray-400">Thank you for registering with <strong><?= htmlspecialchars($gym_name) ?></strong>.</p>
-                <p class="text-green-400 mt-6">Your registration is pending admin approval.</p>
-            </div>
+    <div class="text-center py-20">
+        <div class="text-7xl mb-6">🎉</div>
+        <h1 class="text-3xl font-bold mb-4">Registration Successful!</h1>
+        <p class="text-gray-400">Thank you for registering with <strong><?= htmlspecialchars($gym_name) ?></strong>.</p>
+        <p class="text-green-400 mt-6">Your registration is pending admin approval.</p>
+        
+        <div class="mt-12">
+            <button onclick="window.location.href='https://www.google.com'" 
+                    class="bg-orange-500 hover:bg-orange-600 px-10 py-4 rounded-2xl font-semibold text-lg">
+                Done
+            </button>
+        </div>
+        
+        <p class="text-xs text-gray-500 mt-8">You can now close this tab</p>
+    </div>
         <?php else: ?>
             <div class="text-center mb-10">
                 <h1 class="text-3xl font-bold text-orange-500"><?= htmlspecialchars($gym_name) ?></h1>
