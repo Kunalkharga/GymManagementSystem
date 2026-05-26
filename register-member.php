@@ -19,10 +19,12 @@ $plans = $pdo->query("SELECT * FROM membership_plans WHERE admin_id = $admin_id"
 
 if ($_POST) {
     $photo = '';
+    
+    // Improved Photo Upload
     if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
         $target_dir = "uploads/members/";
         
-        // Create directory if not exists
+        // Ensure directory exists
         if (!is_dir($target_dir)) {
             mkdir($target_dir, 0755, true);
         }
@@ -33,8 +35,8 @@ if ($_POST) {
         if (move_uploaded_file($_FILES['photo']['tmp_name'], $target_file)) {
             // Upload successful
         } else {
-            $photo = ''; // Reset if failed
-            error_log("Upload failed: " . $_FILES['photo']['error']);
+            $photo = ''; 
+            error_log("Photo upload failed for member registration");
         }
     }
 
