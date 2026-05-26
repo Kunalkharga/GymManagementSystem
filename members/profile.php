@@ -429,7 +429,7 @@ function sendWhatsAppReminder() {
     const expiry = "<?= date('d M Y', strtotime($member['expiry_date'])) ?>";
     
     const message = encodeURIComponent(`🏋️‍♂️ Hello ${name},\n\nYour gym membership is expiring on ${expiry}. Please renew your membership to continue your fitness journey! 💪\n\nThank you for being with us!`);
-    window.open(`https://wa.me/91${phone}?text=${message}`, '_blank');
+    window.open(`https://wa.me/977${phone}?text=${message}`, '_blank');
 }
 
 function copyProfileLink() {
