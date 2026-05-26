@@ -5,7 +5,7 @@ session_start();
 ob_start(); // prevent header issues
 
 // Base URL
-define('BASE_URL', 'https://gymmanagementsystem-5ae0.onrender.com/');
+define('BASE_URL', 'https://anytimegym.onrender.com/');
 
 // Get environment variables safely
 $host = getenv('DB_HOST') ?: '';
