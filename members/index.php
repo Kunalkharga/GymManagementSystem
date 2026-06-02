@@ -10,12 +10,12 @@ updateExpiryStatus($pdo, $admin_id);
 $success_msg = '';
 if (isset($_GET['success'])) {
     if ($_GET['success'] == 'added') {
-        $success_msg = "✅ New member added successfully!";
+        $success_msg = "New member added successfully!";
     } elseif ($_GET['success'] == 'updated') {
-        $success_msg = "✅ Member updated successfully!";
+        $success_msg = "Member updated successfully!";
     }
 } elseif (isset($_GET['deleted'])) {
-    $success_msg = "✅ Member deleted successfully!";
+    $success_msg = "Member deleted successfully!";
 }
 
 // Search & Filter
@@ -73,9 +73,9 @@ $members = $stmt->fetchAll();
                 </div>
             </div>
 
-            <div class="mt-4 text-center text-xs text-gray-500 break-all">
+            <!-- <div class="mt-4 text-center text-xs text-gray-500 break-all">
                 <?= htmlspecialchars($qr_url) ?>
-            </div>
+            </div> -->
         </div>
 
         <!-- Success Toast -->
@@ -89,6 +89,18 @@ $members = $stmt->fetchAll();
                 </button>
 
                 <!-- Progress Line -->
+                <div class="absolute bottom-0 left-0 h-1 bg-green-300 rounded-b-2xl" id="progressBar"
+                    style="width: 100%; transition: width 3s linear;"></div>
+            </div>
+        <?php endif; ?>
+
+        <!-- Success Message for Approval -->
+        <?php if (isset($_GET['success']) && $_GET['success'] == 'approved'): ?>
+            <div id="successToast"
+                class="fixed top-6 right-6 bg-green-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50">
+                <i class="fas fa-check-circle text-xl"></i>
+                <span class="flex-1">Member approved successfully and payment recorded!</span>
+                <button onclick="hideToast()" class="text-white/70 hover:text-white">✕</button>
                 <div class="absolute bottom-0 left-0 h-1 bg-green-300 rounded-b-2xl" id="progressBar"
                     style="width: 100%; transition: width 3s linear;"></div>
             </div>
@@ -112,12 +124,17 @@ $members = $stmt->fetchAll();
                             <div>
                                 <p class="font-semibold"><?= htmlspecialchars($m['full_name']) ?></p>
                                 <p class="text-sm text-gray-400"><?= $m['phone'] ?> •
-                                    <?= date('d M Y', strtotime($m['created_at'])) ?></p>
+                                    <?= date('d M Y', strtotime($m['created_at'])) ?>
+                                </p>
                             </div>
                             <div class="flex gap-3">
                                 <a href="approve.php?id=<?= $m['id'] ?>"
                                     class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-xl text-sm font-medium">
                                     Approve
+                                </a>
+                                <a href="profile.php?id=<?= $m['id'] ?>"
+                                    class="bg-orange-600 hover:bg-orange-700 px-6 py-3 rounded-xl text-sm font-medium">
+                                    View
                                 </a>
                                 <a href="delete.php?id=<?= $m['id'] ?>" onclick="return confirm('Reject this registration?')"
                                     class="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-xl text-sm font-medium">
@@ -178,14 +195,6 @@ $members = $stmt->fetchAll();
                             <tr class="border-t border-gray-800 hover:bg-gray-800/70">
                                 <td class="p-4 lg:p-6">
                                     <div class="flex items-center gap-3">
-                                        <?php if ($member['photo']): ?>
-                                            <img src="../uploads/members/<?= $member['photo'] ?>"
-                                                class="w-10 h-10 rounded-full object-cover">
-                                        <?php else: ?>
-                                            <div
-                                                class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg">
-                                                👤</div>
-                                        <?php endif; ?>
                                         <div>
                                             <p class="font-semibold"><?= htmlspecialchars($member['full_name']) ?></p>
                                             <p class="text-xs text-gray-400 md:hidden"><?= $member['phone'] ?></p>
@@ -254,6 +263,24 @@ $members = $stmt->fetchAll();
             }, 3000);
         }
     };
+
+    window.onload = function () {
+        const toast = document.getElementById('successToast');
+        if (toast) {
+            const progressBar = document.getElementById('progressBar');
+            setTimeout(() => { progressBar.style.width = '0%'; }, 100);
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.5s';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.style.display = 'none', 500);
+            }, 3000);
+        }
+    };
+
+    function hideToast() {
+        const toast = document.getElementById('successToast');
+        if (toast) toast.style.display = 'none';
+    }
 </script>
 
 <?php include '../includes/footer.php'; ?>

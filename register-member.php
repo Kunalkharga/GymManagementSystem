@@ -6,7 +6,7 @@ $error = '';
 $success = false;
 
 if ($admin_id == 0) {
-    die("<h1 style='color:red;text-align:center;padding:50px;'>Invalid QR Code</h1>");
+    die("<h1 style='color:red;text-align:center;padding:50px;'>Invalid QR Code. Please scan again.</h1>");
 }
 
 // Get gym name
@@ -15,39 +15,17 @@ $stmt->execute([$admin_id]);
 $gym = $stmt->fetch();
 $gym_name = $gym ? $gym['gym_name'] : 'AnyTimeFitness';
 
-$plans = $pdo->query("SELECT * FROM membership_plans WHERE admin_id = $admin_id")->fetchAll();
+$plans = $pdo->query("SELECT * FROM membership_plans WHERE admin_id = $admin_id ORDER BY price ASC")->fetchAll();
 
 if ($_POST) {
-    $photo = '';
-    
-    // Improved Photo Upload
-    if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
-        $target_dir = "uploads/members/";
-        
-        // Ensure directory exists
-        if (!is_dir($target_dir)) {
-            mkdir($target_dir, 0755, true);
-        }
-        
-        $photo = time() . '_' . basename($_FILES['photo']['name']);
-        $target_file = $target_dir . $photo;
-        
-        if (move_uploaded_file($_FILES['photo']['tmp_name'], $target_file)) {
-            // Upload successful
-        } else {
-            $photo = ''; 
-            error_log("Photo upload failed for member registration");
-        }
-    }
-
     $stmt = $pdo->prepare("SELECT duration_months FROM membership_plans WHERE id = ?");
     $stmt->execute([$_POST['plan_id']]);
     $duration_months = $stmt->fetchColumn();
 
     $stmt = $pdo->prepare("INSERT INTO members 
-        (admin_id, full_name, phone, address, gender, age, photo, membership_plan_id, start_date, expiry_date,
+        (admin_id, full_name, phone, address, gender, age, membership_plan_id, start_date, expiry_date,
          emergency_contact, emergency_phone, height, weight, goal, medical_conditions, blood_group, status, registration_type) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(?, INTERVAL ? MONTH), ?, ?, ?, ?, ?, ?, ?, 'pending', 'self')");
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(?, INTERVAL ? MONTH), ?, ?, ?, ?, ?, ?, ?, 'pending', 'self')");
     
     $stmt->execute([
         $admin_id,
@@ -56,7 +34,6 @@ if ($_POST) {
         sanitize($_POST['address'] ?? ''),
         $_POST['gender'],
         (int)$_POST['age'],
-        $photo,
         $_POST['plan_id'],
         $_POST['start_date'],
         $_POST['start_date'],
@@ -83,60 +60,61 @@ if ($_POST) {
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-950 text-white min-h-screen">
+
     <div class="max-w-lg mx-auto px-4 py-8">
+        
         <?php if($success): ?>
-    <div class="text-center py-20">
-        <div class="text-7xl mb-6">🎉</div>
-        <h1 class="text-3xl font-bold mb-4">Registration Successful!</h1>
-        <p class="text-gray-400">Thank you for registering with <strong><?= htmlspecialchars($gym_name) ?></strong>.</p>
-        <p class="text-green-400 mt-6">Your registration is pending admin approval.</p>
-        
-        <div class="mt-12">
-            <button onclick="window.location.href='https://www.google.com'" 
-                    class="bg-orange-500 hover:bg-orange-600 px-10 py-4 rounded-2xl font-semibold text-lg">
-                Done
-            </button>
-        </div>
-        
-        <p class="text-xs text-gray-500 mt-8">You can now close this tab</p>
-    </div>
+            <div class="text-center py-20">
+                <div class="text-7xl mb-6">🎉</div>
+                <h1 class="text-3xl font-bold mb-4">Registration Submitted!</h1>
+                <p class="text-gray-400">Thank you for registering with <strong><?= htmlspecialchars($gym_name) ?></strong>.</p>
+                <p class="text-green-400 mt-6">Your registration is pending admin approval.</p>
+                
+                <button onclick="window.location.href='https://www.google.com'" 
+                        class="mt-10 bg-orange-500 hover:bg-orange-600 px-10 py-4 rounded-2xl font-semibold text-lg">
+                    Close Window
+                </button>
+            </div>
         <?php else: ?>
+
             <div class="text-center mb-10">
                 <h1 class="text-3xl font-bold text-orange-500"><?= htmlspecialchars($gym_name) ?></h1>
                 <p class="text-gray-400 mt-2">New Member Registration</p>
             </div>
 
-            <form method="POST" enctype="multipart/form-data" class="space-y-8">
+            <form method="POST" class="space-y-8">
+                
                 <!-- Personal Information -->
                 <div class="space-y-5">
                     <h2 class="text-lg font-semibold">Personal Information</h2>
-                    <input type="text" name="full_name" required placeholder="Full Name *"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                    <input type="tel" name="phone" required placeholder="Phone Number *"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
+                    <input type="text" name="full_name" required placeholder="Full Name *" 
+                           class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
+                    <input type="tel" name="phone" required placeholder="Phone Number *" 
+                           class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
                 </div>
-                 <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Address</label>
-                        <textarea name="address" rows="2" 
-                                  class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white placeholder-gray-500 transition-colors resize-none"
-                                  placeholder="Street, City, State, Postal Code"></textarea>
-                    </div>
 
-                <!-- Emergency -->
+                <!-- Emergency Contact -->
                 <div class="space-y-5">
                     <h2 class="text-lg font-semibold">Emergency Contact</h2>
-                    <input type="text" name="emergency_contact" required placeholder="Emergency Contact Name *"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                    <input type="tel" name="emergency_phone" required placeholder="Emergency Phone Number *"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
+                    <input type="text" name="emergency_contact" required placeholder="Emergency Contact Name *" 
+                           class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
+                    <input type="tel" name="emergency_phone" required placeholder="Emergency Phone Number *" 
+                           class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
                 </div>
 
-                <!-- Basic -->
+                <!-- Address -->
+                <div>
+                    <label class="block text-sm mb-2">Address</label>
+                    <textarea name="address" rows="3" 
+                              class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4" 
+                              placeholder="Full Address"></textarea>
+                </div>
+
+                <!-- Basic Details -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm mb-2">Gender</label>
-                        <select name="gender" required
-                            class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
+                        <select name="gender" required class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                             <option value="Other">Other</option>
@@ -144,22 +122,19 @@ if ($_POST) {
                     </div>
                     <div>
                         <label class="block text-sm mb-2">Age</label>
-                        <input type="number" name="age" required
-                            class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
+                        <input type="number" name="age" required class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
                     </div>
                 </div>
 
-                <!-- Health -->
+                <!-- Health Information -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm mb-2">Height (cm)</label>
-                        <input type="number" step="0.01" name="height"
-                            class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
+                        <input type="number" step="0.01" name="height" class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
                     </div>
                     <div>
                         <label class="block text-sm mb-2">Weight (kg)</label>
-                        <input type="number" step="0.01" name="weight"
-                            class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
+                        <input type="number" step="0.01" name="weight" class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
                     </div>
                 </div>
 
@@ -190,14 +165,13 @@ if ($_POST) {
 
                 <div>
                     <label class="block text-sm mb-2">Medical Conditions (Optional)</label>
-                    <textarea name="medical_conditions" rows="3"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4"></textarea>
+                    <textarea name="medical_conditions" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4"></textarea>
                 </div>
 
                 <div>
                     <label class="block text-sm mb-2">Membership Plan</label>
                     <select name="plan_id" required class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                        <?php foreach ($plans as $plan): ?>
+                        <?php foreach($plans as $plan): ?>
                             <option value="<?= $plan['id'] ?>"><?= $plan['plan_name'] ?> - ₹<?= $plan['price'] ?></option>
                         <?php endforeach; ?>
                     </select>
@@ -205,18 +179,10 @@ if ($_POST) {
 
                 <div>
                     <label class="block text-sm mb-2">Start Date</label>
-                    <input type="date" name="start_date" value="<?= date('Y-m-d') ?>" required
-                        class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
+                    <input type="date" name="start_date" value="<?= date('Y-m-d') ?>" required class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
                 </div>
 
-                <div>
-                    <label class="block text-sm mb-2">Profile Photo (Optional)</label>
-                    <input type="file" name="photo" accept="image/*"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                </div>
-
-                <button type="submit"
-                    class="w-full bg-orange-500 hover:bg-orange-600 py-5 rounded-2xl font-semibold text-lg mt-6">
+                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 py-5 rounded-2xl font-semibold text-lg mt-6">
                     Submit Registration
                 </button>
             </form>

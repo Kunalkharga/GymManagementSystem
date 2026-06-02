@@ -5,8 +5,8 @@ if (!isLoggedIn()) redirect('../login.php');
 $admin_id = $_SESSION['admin_id'];
 $member_id = (int)$_GET['id'];
 
-// Fetch pending member
-$stmt = $pdo->prepare("SELECT * FROM members WHERE id = ? AND admin_id = ? AND status = 'pending'");
+// Fetch member
+$stmt = $pdo->prepare("SELECT * FROM members WHERE id = ? AND admin_id = ?");
 $stmt->execute([$member_id, $admin_id]);
 $member = $stmt->fetch();
 
@@ -34,7 +34,7 @@ if ($_POST) {
         WHERE id = ?");
     $stmt->execute([$plan_id, $start_date, $start_date, $plan['duration_months'], $member_id]);
 
-    // Create Payment Record
+    // Create NEW payment record
     $stmt = $pdo->prepare("INSERT INTO payments 
         (member_id, admin_id, plan_name, amount, payment_method, payment_date, start_date, expiry_date) 
         VALUES (?, ?, ?, ?, ?, ?, ?, DATE_ADD(?, INTERVAL ? MONTH))");
@@ -50,8 +50,7 @@ if ($_POST) {
         $plan['duration_months']
     ]);
 
-    // Redirect to members index with success message
-    redirect('index.php?success=approved');
+    redirect("profile.php?id=$member_id&renewed=1");
 }
 ?>
 
@@ -61,11 +60,12 @@ if ($_POST) {
 <div class="lg:ml-64 min-h-screen pt-16 lg:pt-0">
     <div class="p-4 lg:p-8 max-w-2xl mx-auto">
         
-        <a href="index.php" class="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6">
-            ← Back to Pending Members
+        
+        <a href="profile.php?id=<?= $member_id ?>" class="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6">
+            ← Back to Profile
         </a>
 
-        <h1 class="text-3xl font-bold mb-8">Approve Member</h1>
+        <h1 class="text-3xl font-bold mb-8">Renew Membership</h1>
 
         <div class="bg-gray-900 rounded-3xl p-8">
             <h2 class="text-2xl font-semibold mb-6"><?= htmlspecialchars($member['full_name']) ?></h2>
@@ -73,7 +73,7 @@ if ($_POST) {
             <form method="POST" class="space-y-8">
                 
                 <div>
-                    <label class="block text-sm mb-2">Membership Plan</label>
+                    <label class="block text-sm mb-2">New Membership Plan</label>
                     <select name="plan_id" required class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
                         <?php foreach($plans as $plan): ?>
                             <option value="<?= $plan['id'] ?>" 
@@ -97,7 +97,7 @@ if ($_POST) {
                 </div>
 
                 <div>
-                    <label class="block text-sm mb-2">Start Date</label>
+                    <label class="block text-sm mb-2">New Start Date</label>
                     <input type="date" name="start_date" value="<?= date('Y-m-d') ?>" required 
                            class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
                 </div>
@@ -112,8 +112,8 @@ if ($_POST) {
                     </select>
                 </div>
 
-                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 py-5 rounded-2xl font-semibold text-lg">
-                    Approve Member & Record First Payment
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-semibold text-lg">
+                    Renew Membership & Record Payment
                 </button>
             </form>
         </div>

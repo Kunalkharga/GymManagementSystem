@@ -27,7 +27,7 @@ $plans = $stmt->fetchAll();
                 ?>
             </span>
             <button onclick="hideToast()" class="text-white/70 hover:text-white">✕</button>
-            <div class="absolute bottom-0 left-0 h-1 bg-green-300 rounded-b-2xl" id="progressBar" style="width: 100%; transition: width 3s linear;"></div>
+            <div class="absolute bottom-0 left-0 h-1 bg-green-300 rounded-b-2xl" id="progressBar" style="width: 100%; transition: width 5s linear;"></div>
         </div>
         <?php endif; ?>
 
@@ -78,7 +78,7 @@ window.onload = function() {
         setTimeout(() => {
             toast.style.opacity = '0';
             setTimeout(() => toast.style.display = 'none', 500);
-        }, 3000);
+        }, 5000);
     }
 };
 function hideToast() {

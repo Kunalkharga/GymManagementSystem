@@ -315,7 +315,7 @@ if ($_POST) {
             </div>
 
             <!-- Section 5: Start Date & Photo -->
-            <div class="form-section grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="form-section bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
                 <div class="bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
                     <div class="px-5 py-4 lg:px-8 lg:py-5 border-b border-gray-800 bg-gray-900/80">
                         <div class="flex items-center gap-3">
@@ -334,7 +334,7 @@ if ($_POST) {
                     </div>
                 </div>
 
-                <div class="bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
+                <!-- <div class="bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
                     <div class="px-5 py-4 lg:px-8 lg:py-5 border-b border-gray-800 bg-gray-900/80">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
@@ -358,7 +358,7 @@ if ($_POST) {
                             <input type="file" name="photo" accept="image/*" class="hidden">
                         </label>
                     </div>
-                </div>
+                </div> -->
             </div>
 
             <!-- Submit Button -->

@@ -44,7 +44,7 @@ if ($_POST) {
         goal = ?, 
         medical_conditions = ?, 
         blood_group = ?,
-        status = 'active'
+        status = ?
         WHERE id = ? AND admin_id = ?");
 
     $stmt->execute([
@@ -65,6 +65,7 @@ if ($_POST) {
         $_POST['goal'],
         sanitize($_POST['medical_conditions']),
         sanitize($_POST['blood_group']),
+        $member['status'],           // ← Important: Keep original status
         $member_id,
         $admin_id
     ]);
@@ -120,15 +121,7 @@ if ($_POST) {
     }
 }
 
-/* Current photo preview styling */
-.current-photo-preview {
-    transition: all 0.2s ease;
-}
 
-.current-photo-preview:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-}
 </style>
 
 <div class="lg:ml-64 min-h-screen pt-16 lg:pt-0">
@@ -343,7 +336,7 @@ if ($_POST) {
             </div>
 
             <!-- Section 5: Start Date & Photo -->
-            <div class="form-section grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="form-section bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
                 <div class="bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
                     <div class="px-5 py-4 lg:px-8 lg:py-5 border-b border-gray-800 bg-gray-900/80">
                         <div class="flex items-center gap-3">
@@ -362,7 +355,7 @@ if ($_POST) {
                     </div>
                 </div>
 
-                <div class="bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
+                <!-- <div class="bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
                     <div class="px-5 py-4 lg:px-8 lg:py-5 border-b border-gray-800 bg-gray-900/80">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
@@ -396,7 +389,7 @@ if ($_POST) {
                             <input type="file" name="photo" accept="image/*" class="hidden">
                         </label>
                     </div>
-                </div>
+                </div> -->
             </div>
 
             <!-- Submit Button -->
