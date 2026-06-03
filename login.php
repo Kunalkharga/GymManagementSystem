@@ -91,7 +91,7 @@ if ($_POST) {
         <div class="text-center mt-8">
             <p class="text-gray-400">
                 Don't have an account? 
-                <a href="register.php" class="text-orange-400 hover:text-orange-500 font-semibold">
+                <a href="gym-register.php" class="text-orange-400 hover:text-orange-500 font-semibold">
                     Create New Gym Account
                 </a>
             </p>
