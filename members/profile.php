@@ -172,14 +172,16 @@ if (!empty($member['height']) && !empty($member['weight'])) {
         <?php endif; ?>
 
         <!-- Renew Success Message -->
-<?php if(isset($_GET['renewed'])): ?>
-<div id="successToast" class="fixed top-6 right-6 bg-green-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50">
-    <i class="fas fa-check-circle text-xl"></i>
-    <span class="flex-1">Membership Renewed Successfully! New payment recorded.</span>
-    <button onclick="hideToast()" class="text-white/70 hover:text-white">✕</button>
-    <div class="absolute bottom-0 left-0 h-1 bg-green-300 rounded-b-2xl" id="progressBar" style="width: 100%; transition: width 5s linear;"></div>
-</div>
-<?php endif; ?>
+        <?php if (isset($_GET['renewed'])): ?>
+            <div id="successToast"
+                class="fixed top-6 right-6 bg-green-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50">
+                <i class="fas fa-check-circle text-xl"></i>
+                <span class="flex-1">Membership Renewed Successfully! New payment recorded.</span>
+                <button onclick="hideToast()" class="text-white/70 hover:text-white">✕</button>
+                <div class="absolute bottom-0 left-0 h-1 bg-green-300 rounded-b-2xl" id="progressBar"
+                    style="width: 100%; transition: width 5s linear;"></div>
+            </div>
+        <?php endif; ?>
 
         <!-- Breadcrumb Navigation -->
         <nav class="flex items-center gap-2 text-sm text-gray-400 mb-6 fade-in-up">
@@ -198,21 +200,28 @@ if (!empty($member['height']) && !empty($member['weight'])) {
                     Member Profile
                 </h1>
             </div>
-            <div class="flex gap-3">
+
+            <!-- Buttons - Right aligned on mobile -->
+            <div class="flex justify-end gap-3 sm:gap-4">
+                <!-- Edit Button -->
                 <a href="edit.php?id=<?= $member['id'] ?>"
-                    class="px-6 py-3 bg-orange-500 hover:bg-orange-600 rounded-2xl font-semibold transition-all transform hover:scale-105 btn-hover-effect relative overflow-hidden flex items-center gap-2">
-                    <i class="fas fa-edit"></i>
-                    <span>Edit Profile</span>
+                    class="px-4 sm:px-6 py-3 bg-orange-500 hover:bg-orange-600 rounded-2xl font-semibold transition-all transform hover:scale-105 btn-hover-effect relative overflow-hidden flex items-center gap-2">
+                    <i class="fas fa-edit text-xl sm:text-lg"></i>
+                    <span class="hidden sm:inline">Edit Profile</span>
                 </a>
+
+                <!-- WhatsApp Button -->
                 <button onclick="sendWhatsAppReminder()"
-                    class="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-2xl font-semibold transition-all transform hover:scale-105 flex items-center gap-2">
-                    <i class="fab fa-whatsapp"></i>
-                    <span>Send Reminder</span>
+                    class="px-4 sm:px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-2xl font-semibold transition-all transform hover:scale-105 flex items-center gap-2">
+                    <i class="fab fa-whatsapp text-xl sm:text-lg"></i>
+                    <span class="hidden sm:inline">Send Reminder</span>
                 </button>
-                <!-- New Renew Button -->
+
+                <!-- Renew Button -->
                 <a href="renew.php?id=<?= $member['id'] ?>"
-                    class="flex-1 md:flex-none text-center px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-2xl font-semibold">
-                    Renew Membership
+                    class="px-4 sm:px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-2xl font-semibold transition-all transform hover:scale-105 flex items-center gap-2">
+                    <i class="fas fa-sync-alt text-xl sm:text-lg"></i>
+                    <span class="hidden sm:inline">Renew Membership</span>
                 </a>
             </div>
         </div>
@@ -247,6 +256,23 @@ if (!empty($member['height']) && !empty($member['weight'])) {
                         <i class="fas fa-phone-alt"></i>
                         <?= htmlspecialchars($member['phone']) ?>
                     </p>
+
+                    <!-- Training Shift Badge - Added after phone number -->
+                    <div class="mt-3 flex justify-center md:justify-start">
+                        <div
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl <?= ($member['shift'] ?? '') == 'Morning' ? 'bg-amber-500/20 border border-amber-500/50' : (($member['shift'] ?? '') == 'Evening' ? 'bg-indigo-500/20 border border-indigo-500/50' : 'bg-gray-800 border border-gray-700') ?>">
+                            <i
+                                class="fas fa-clock text-sm <?= ($member['shift'] ?? '') == 'Morning' ? 'text-amber-400' : (($member['shift'] ?? '') == 'Evening' ? 'text-indigo-400' : 'text-gray-500') ?>"></i>
+                            <span class="text-sm font-medium">
+                                <?php if (!empty($member['shift'])): ?>
+                                    Training Shift: <?= htmlspecialchars($member['shift']) ?>
+
+                                <?php else: ?>
+                                    No Shift Assigned
+                                <?php endif; ?>
+                            </span>
+                        </div>
+                    </div>
 
                     <div class="mt-6 flex flex-wrap justify-center md:justify-start gap-3">
                         <div class="px-5 py-2.5 bg-gray-800 rounded-xl text-sm flex items-center gap-2">
@@ -460,27 +486,27 @@ if (!empty($member['height']) && !empty($member['weight'])) {
                     </div>
                 </div>
 
-                
+
 
             </div>
-            
+
 
             <!-- Quick Actions Footer -->
 
         </div>
-         <!-- Payment History -->
-        <div class="mt-12">
+        <!-- Payment History -->
+        <!-- <div class="mt-12">
             <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
                 <i class="fas fa-history"></i> Payment History
             </h2>
-            
+
             <?php
             $stmt = $pdo->prepare("SELECT * FROM payments WHERE member_id = ? ORDER BY payment_date DESC");
             $stmt->execute([$member_id]);
             $payments = $stmt->fetchAll();
             ?>
-            
-            <?php if(count($payments) > 0): ?>
+
+            <?php if (count($payments) > 0): ?>
                 <div class="bg-gray-900 rounded-3xl overflow-hidden">
                     <table class="w-full">
                         <thead class="bg-gray-800">
@@ -492,17 +518,17 @@ if (!empty($member['height']) && !empty($member['weight'])) {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach($payments as $pay): ?>
-                            <tr class="border-t border-gray-800">
-                                <td class="p-5"><?= date('d M Y', strtotime($pay['payment_date'])) ?></td>
-                                <td class="p-5"><?= htmlspecialchars($pay['plan_name']) ?></td>
-                                <td class="p-5 font-semibold text-green-400">₹<?= number_format($pay['amount']) ?></td>
-                                <td class="p-5">
-                                    <span class="px-4 py-1 bg-gray-700 text-xs rounded-full capitalize">
-                                        <?= $pay['payment_method'] ?>
-                                    </span>
-                                </td>
-                            </tr>
+                            <?php foreach ($payments as $pay): ?>
+                                <tr class="border-t border-gray-800">
+                                    <td class="p-5"><?= date('d M Y', strtotime($pay['payment_date'])) ?></td>
+                                    <td class="p-5"><?= htmlspecialchars($pay['plan_name']) ?></td>
+                                    <td class="p-5 font-semibold text-green-400">₹<?= number_format($pay['amount']) ?></td>
+                                    <td class="p-5">
+                                        <span class="px-4 py-1 bg-gray-700 text-xs rounded-full capitalize">
+                                            <?= $pay['payment_method'] ?>
+                                        </span>
+                                    </td>
+                                </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
@@ -512,7 +538,98 @@ if (!empty($member['height']) && !empty($member['weight'])) {
                     No payment history yet.
                 </div>
             <?php endif; ?>
+        </div> -->
+
+        <!-- Payment History -->
+        <div class="mt-12">
+            <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                <i class="fas fa-history"></i> Payment History
+            </h2>
+
+            <?php
+            $stmt = $pdo->prepare("SELECT * FROM payments WHERE member_id = ? ORDER BY payment_date DESC");
+            $stmt->execute([$member_id]);
+            $payments = $stmt->fetchAll();
+            ?>
+
+            <?php if (count($payments) > 0): ?>
+                <!-- Desktop Table View (hidden on mobile) -->
+                <div class="hidden md:block bg-gray-900 rounded-3xl overflow-hidden">
+                    <table class="w-full">
+                        <thead class="bg-gray-800">
+                            <tr>
+                                <th class="text-left p-5">Date</th>
+                                <th class="text-left p-5">Plan</th>
+                                <th class="text-left p-5">Amount</th>
+                                <th class="text-left p-5">Method</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($payments as $pay): ?>
+                                <tr class="border-t border-gray-800">
+                                    <td class="p-5"><?= date('d M Y', strtotime($pay['payment_date'])) ?></td>
+                                    <td class="p-5"><?= htmlspecialchars($pay['plan_name']) ?></td>
+                                    <td class="p-5 font-semibold text-green-400">₹<?= number_format($pay['amount']) ?></td>
+                                    <td class="p-5">
+                                        <span class="px-4 py-1 bg-gray-700 text-xs rounded-full capitalize">
+                                            <?= $pay['payment_method'] ?>
+                                        </span>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile Card View (visible only on mobile) -->
+                <div class="block md:hidden space-y-4">
+                    <?php foreach ($payments as $pay): ?>
+                        <div class="bg-gray-900 rounded-2xl p-5 border border-gray-800">
+                            <div class="flex justify-between items-start mb-3 pb-3 border-b border-gray-800">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-calendar-alt text-orange-500 text-sm"></i>
+                                    <span class="text-gray-400 text-sm">Date</span>
+                                </div>
+                                <span
+                                    class="font-semibold text-white"><?= date('d M Y', strtotime($pay['payment_date'])) ?></span>
+                            </div>
+
+                            <div class="flex justify-between items-start mb-3 pb-3 border-b border-gray-800">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-dumbbell text-blue-500 text-sm"></i>
+                                    <span class="text-gray-400 text-sm">Plan</span>
+                                </div>
+                                <span class="font-semibold text-white"><?= htmlspecialchars($pay['plan_name']) ?></span>
+                            </div>
+
+                            <div class="flex justify-between items-start mb-3 pb-3 border-b border-gray-800">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-rupee-sign text-green-500 text-sm"></i>
+                                    <span class="text-gray-400 text-sm">Amount</span>
+                                </div>
+                                <span class="font-semibold text-green-400">₹<?= number_format($pay['amount']) ?></span>
+                            </div>
+
+                            <div class="flex justify-between items-start">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-credit-card text-purple-500 text-sm"></i>
+                                    <span class="text-gray-400 text-sm">Method</span>
+                                </div>
+                                <span class="px-4 py-1 bg-gray-800 text-xs rounded-full capitalize text-gray-300">
+                                    <?= $pay['payment_method'] ?>
+                                </span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="bg-gray-900 rounded-3xl p-12 text-center text-gray-400">
+                    <i class="fas fa-receipt text-5xl mb-3 opacity-50"></i>
+                    <p>No payment history yet.</p>
+                </div>
+            <?php endif; ?>
         </div>
+
     </div>
 </div>
 
