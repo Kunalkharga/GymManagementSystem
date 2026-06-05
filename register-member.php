@@ -1,7 +1,7 @@
 <?php
 require_once 'config.php';
 
-$admin_id = isset($_GET['gym']) ? (int)$_GET['gym'] : 0;
+$admin_id = isset($_GET['gym']) ? (int) $_GET['gym'] : 0;
 $error = '';
 $success = false;
 
@@ -23,28 +23,28 @@ if ($_POST) {
     $duration_months = $stmt->fetchColumn();
 
     $stmt = $pdo->prepare("INSERT INTO members 
-        (admin_id, full_name, phone, address, gender, age, membership_plan_id, start_date, expiry_date,
-         emergency_contact, emergency_phone, height, weight, goal, medical_conditions, blood_group, status, registration_type) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(?, INTERVAL ? MONTH), ?, ?, ?, ?, ?, ?, ?, 'pending', 'self')");
-    
+    (admin_id, full_name, phone, address, gender, age, membership_plan_id, start_date, expiry_date,
+     emergency_contact, emergency_phone, height, weight, goal, medical_conditions, blood_group, shift, status, registration_type) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'self')");
+
     $stmt->execute([
         $admin_id,
         sanitize($_POST['full_name']),
         sanitize($_POST['phone']),
         sanitize($_POST['address'] ?? ''),
         $_POST['gender'],
-        (int)$_POST['age'],
+        (int) $_POST['age'],
         $_POST['plan_id'],
         $_POST['start_date'],
         $_POST['start_date'],
-        $duration_months,
         sanitize($_POST['emergency_contact']),
         sanitize($_POST['emergency_phone']),
         !empty($_POST['height']) ? $_POST['height'] : null,
         !empty($_POST['weight']) ? $_POST['weight'] : null,
         $_POST['goal'],
         sanitize($_POST['medical_conditions'] ?? ''),
-        sanitize($_POST['blood_group'] ?? '')
+        sanitize($_POST['blood_group'] ?? ''),
+        $_POST['shift']
     ]);
 
     $success = true;
@@ -53,25 +53,97 @@ if ($_POST) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration - <?= htmlspecialchars($gym_name) ?></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-950 text-white min-h-screen">
 
-    <div class="max-w-lg mx-auto px-4 py-8">
-        
-        <?php if($success): ?>
+<style>
+    /* Smooth transitions for form elements */
+    .form-section {
+        transition: all 0.2s ease;
+    }
+
+    .form-input-modern:focus {
+        outline: none;
+        border-color: #f97316;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+    }
+
+    /* Custom file upload styling */
+    .file-upload-label:hover {
+        background-color: rgba(249, 115, 22, 0.05);
+        border-color: #f97316;
+    }
+
+    /* Scroll reveal animation for sections */
+    @keyframes fadeSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-section {
+        animation: fadeSlideUp 0.4s ease-out forwards;
+    }
+
+    .form-section:nth-child(1) {
+        animation-delay: 0s;
+    }
+
+    .form-section:nth-child(2) {
+        animation-delay: 0.05s;
+    }
+
+    .form-section:nth-child(3) {
+        animation-delay: 0.1s;
+    }
+
+    .form-section:nth-child(4) {
+        animation-delay: 0.15s;
+    }
+
+    .form-section:nth-child(5) {
+        animation-delay: 0.2s;
+    }
+
+    /* Responsive touch-friendly inputs */
+    @media (max-width: 768px) {
+
+        input,
+        select,
+        textarea,
+        button {
+            font-size: 16px !important;
+            /* Prevents zoom on mobile */
+        }
+    }
+</style>
+
+<body class="bg-gray-950 text-white min-h-screen ">
+
+    <div class="p-4 lg:p-8 max-w-4xl mx-auto">
+
+        <?php if ($success): ?>
             <div class="text-center py-20">
                 <div class="text-7xl mb-6">🎉</div>
                 <h1 class="text-3xl font-bold mb-4">Registration Submitted!</h1>
-                <p class="text-gray-400">Thank you for registering with <strong><?= htmlspecialchars($gym_name) ?></strong>.</p>
+                <p class="text-gray-400">Thank you for registering with <strong><?= htmlspecialchars($gym_name) ?></strong>.
+                </p>
                 <p class="text-green-400 mt-6">Your registration is pending admin approval.</p>
-                
-                <button onclick="window.location.href='https://www.google.com'" 
-                        class="mt-10 bg-orange-500 hover:bg-orange-600 px-10 py-4 rounded-2xl font-semibold text-lg">
+
+                <button onclick="window.location.href='https://www.google.com'"
+                    class="mt-10 bg-orange-500 hover:bg-orange-600 px-10 py-4 rounded-2xl font-semibold text-lg">
                     Close Window
                 </button>
             </div>
@@ -82,111 +154,306 @@ if ($_POST) {
                 <p class="text-gray-400 mt-2">New Member Registration</p>
             </div>
 
-            <form method="POST" class="space-y-8">
-                
-                <!-- Personal Information -->
-                <div class="space-y-5">
-                    <h2 class="text-lg font-semibold">Personal Information</h2>
-                    <input type="text" name="full_name" required placeholder="Full Name *" 
-                           class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                    <input type="tel" name="phone" required placeholder="Phone Number *" 
-                           class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                </div>
+            <form method="POST" class="space-y-6 lg:space-y-8">
 
-                <!-- Emergency Contact -->
-                <div class="space-y-5">
-                    <h2 class="text-lg font-semibold">Emergency Contact</h2>
-                    <input type="text" name="emergency_contact" required placeholder="Emergency Contact Name *" 
-                           class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                    <input type="tel" name="emergency_phone" required placeholder="Emergency Phone Number *" 
-                           class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                </div>
-
-                <!-- Address -->
-                <div>
-                    <label class="block text-sm mb-2">Address</label>
-                    <textarea name="address" rows="3" 
-                              class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4" 
-                              placeholder="Full Address"></textarea>
-                </div>
-
-                <!-- Basic Details -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm mb-2">Gender</label>
-                        <select name="gender" required class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                        </select>
+                <!-- Section 1: Personal Information -->
+                <div
+                    class="form-section bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
+                    <div class="px-5 py-4 lg:px-8 lg:py-5 border-b border-gray-800 bg-gray-900/80">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            </div>
+                            <h2 class="text-base lg:text-lg font-semibold text-gray-200">Personal Information</h2>
+                            <span class="text-xs text-gray-500 ml-auto">Required fields *</span>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm mb-2">Age</label>
-                        <input type="number" name="age" required class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                    </div>
-                </div>
-
-                <!-- Health Information -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm mb-2">Height (cm)</label>
-                        <input type="number" step="0.01" name="height" class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-2">Weight (kg)</label>
-                        <input type="number" step="0.01" name="weight" class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
+                    <div class="p-5 lg:p-8 space-y-5">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    Full Name <span class="text-orange-500">*</span>
+                                </label>
+                                <input type="text" name="full_name" required
+                                    class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white placeholder-gray-500 transition-colors"
+                                    placeholder="Enter full name">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    Phone Number <span class="text-orange-500">*</span>
+                                </label>
+                                <input type="tel" name="phone" required
+                                    class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white placeholder-gray-500 transition-colors"
+                                    placeholder="+91 XXXXXXXXXX">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Address</label>
+                            <textarea name="address" rows="2"
+                                class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white placeholder-gray-500 transition-colors resize-none"
+                                placeholder="Street, City, State, Postal Code"></textarea>
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm mb-2">Goal</label>
-                    <select name="goal" required class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                        <option value="Weight Gain">Weight Gain</option>
-                        <option value="Weight Loss">Weight Loss</option>
-                        <option value="Fitness">General Fitness</option>
-                        <option value="Muscle Building">Muscle Building</option>
-                    </select>
+                <!-- Section 2: Emergency Contact -->
+                <div
+                    class="form-section bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
+                    <div class="px-5 py-4 lg:px-8 lg:py-5 border-b border-gray-800 bg-gray-900/80">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h2 class="text-base lg:text-lg font-semibold text-gray-200">Emergency Contact</h2>
+                        </div>
+                    </div>
+                    <div class="p-5 lg:p-8 space-y-5">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    Contact Name <span class="text-orange-500">*</span>
+                                </label>
+                                <input type="text" name="emergency_contact" required
+                                    class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white placeholder-gray-500 transition-colors"
+                                    placeholder="Full name of emergency contact">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    Emergency Phone <span class="text-orange-500">*</span>
+                                </label>
+                                <input type="tel" name="emergency_phone" required
+                                    class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white placeholder-gray-500 transition-colors"
+                                    placeholder="Emergency contact number">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm mb-2">Blood Group</label>
-                    <select name="blood_group" class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                        <option value="">Select Blood Group</option>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                    </select>
+                <!-- Section 3: Basic Details & Membership -->
+                <div
+                    class="form-section bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
+                    <div class="px-5 py-4 lg:px-8 lg:py-5 border-b border-gray-800 bg-gray-900/80">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h2 class="text-base lg:text-lg font-semibold text-gray-200">Membership & Basic Details</h2>
+                        </div>
+                    </div>
+                    <div class="p-5 lg:p-8">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    Gender <span class="text-orange-500">*</span>
+                                </label>
+                                <select name="gender" required
+                                    class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white transition-colors cursor-pointer">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    Age <span class="text-orange-500">*</span>
+                                </label>
+                                <input type="number" name="age" required min="12" max="120"
+                                    class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white transition-colors"
+                                    placeholder="Years">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    Membership Plan <span class="text-orange-500">*</span>
+                                </label>
+                                <select name="plan_id" required
+                                    class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white transition-colors cursor-pointer">
+                                    <option value="">Select a plan</option>
+                                    <?php foreach ($plans as $plan): ?>
+                                        <option value="<?= $plan['id'] ?>"><?= htmlspecialchars($plan['plan_name']) ?> -
+                                            ₹<?= number_format($plan['price']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm mb-2">Medical Conditions (Optional)</label>
-                    <textarea name="medical_conditions" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4"></textarea>
+                <!-- Section 4: Health Information -->
+                <div
+                    class="form-section bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
+                    <div class="px-5 py-4 lg:px-8 lg:py-5 border-b border-gray-800 bg-gray-900/80">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h2 class="text-base lg:text-lg font-semibold text-gray-200">Health Information</h2>
+                        </div>
+                    </div>
+                    <div class="p-5 lg:p-8 space-y-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Height (cm)</label>
+                                <input type="number" step="0.01" name="height"
+                                    class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white transition-colors"
+                                    placeholder="e.g., 175.5">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Weight (kg)</label>
+                                <input type="number" step="0.01" name="weight"
+                                    class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white transition-colors"
+                                    placeholder="e.g., 72.5">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    Goal <span class="text-orange-500">*</span>
+                                </label>
+                                <select name="goal" required
+                                    class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white transition-colors cursor-pointer">
+                                    <option value="Weight Gain">💪 Weight Gain</option>
+                                    <option value="Weight Loss">🔥 Weight Loss</option>
+                                    <option value="Fitness">🧘 General Fitness</option>
+                                    <option value="Muscle Building">🏋️ Muscle Building</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Blood Group</label>
+                                <select name="blood_group"
+                                    class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white transition-colors cursor-pointer">
+                                    <option value="">Select Blood Group</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Medical Conditions
+                                (Optional)</label>
+                            <textarea name="medical_conditions" rows="2"
+                                class="form-input-modern w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-xl px-4 py-3 text-white placeholder-gray-500 transition-colors resize-none"
+                                placeholder="Diabetes, Asthma, Allergy, etc."></textarea>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm mb-2">Membership Plan</label>
-                    <select name="plan_id" required class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                        <?php foreach($plans as $plan): ?>
-                            <option value="<?= $plan['id'] ?>"><?= $plan['plan_name'] ?> - ₹<?= $plan['price'] ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                <!-- Section: Start Date & Shift -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                    <!-- Start Date -->
+                    <div
+                        class="bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
+                        <div class="px-5 py-4 lg:px-8 lg:py-5 border-b border-gray-800 bg-gray-900/80">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                                    <i class="fas fa-calendar-alt text-purple-400"></i>
+                                </div>
+                                <h2 class="text-base lg:text-lg font-semibold text-gray-200">Start Date</h2>
+                            </div>
+                        </div>
+                        <div class="p-5 lg:p-8">
+                            <input type="date" name="start_date" value="<?= date('Y-m-d') ?>" required
+                                class="w-full bg-gray-800 border border-gray-700 focus:border-orange-500 rounded-2xl px-5 py-4 text-lg">
+                            <p class="text-xs text-gray-500 mt-3">Expiry date will be calculated automatically based on plan
+                                duration.</p>
+                        </div>
+                    </div>
+
+                    <!-- Training Shift Selection -->
+                    <div
+                        class="bg-gray-900/50 backdrop-blur-sm rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
+                        <div class="px-5 py-4 lg:px-8 lg:py-5 border-b border-gray-800 bg-gray-900/80">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                                    <i class="fas fa-clock text-blue-500 text-lg"></i>
+                                </div>
+                                <h2 class="text-base lg:text-lg font-semibold text-gray-200">Training Shift <span
+                                        class="text-red-500">*</span></h2>
+                            </div>
+                        </div>
+                        <div class="p-5 lg:p-8">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="shift" value="Morning" class="peer hidden">
+                                    <div
+                                        class="peer-checked:bg-blue-600 peer-checked:text-white border-2 border-gray-700 hover:border-blue-500 transition-all rounded-2xl p-6 text-center">
+                                        <i class="fas fa-sun text-3xl mb-3 text-yellow-400"></i>
+                                        <p class="font-semibold text-lg">Morning Shift</p>
+                                        <p class="text-sm text-gray-400">6:00 AM - 10:00 AM</p>
+                                    </div>
+                                </label>
+
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="shift" value="Evening" class="peer hidden">
+                                    <div
+                                        class="peer-checked:bg-blue-600 peer-checked:text-white border-2 border-gray-700 hover:border-blue-500 transition-all rounded-2xl p-6 text-center">
+                                        <i class="fas fa-moon text-3xl mb-3 text-indigo-400"></i>
+                                        <p class="font-semibold text-lg">Evening <br>Shift</p>
+                                        <p class="text-sm text-gray-400">4:00 PM - 8:00 PM</p>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Error Message -->
+                            <p class="text-red-400 text-sm mt-3 hidden" id="shiftError">
+                                ⚠️ Please select a training shift (Morning or Evening)
+                            </p>
+                        </div>
+                    </div>
+
                 </div>
 
-                <div>
-                    <label class="block text-sm mb-2">Start Date</label>
-                    <input type="date" name="start_date" value="<?= date('Y-m-d') ?>" required class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4">
-                </div>
-
-                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 py-5 rounded-2xl font-semibold text-lg mt-6">
+                <button type="submit"
+                    class="w-full bg-orange-500 hover:bg-orange-600 py-5 rounded-2xl font-semibold text-lg mt-6">
                     Submit Registration
                 </button>
             </form>
         <?php endif; ?>
     </div>
 </body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form');
+
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                const shiftSelected = document.querySelector('input[name="shift"]:checked');
+
+                if (!shiftSelected) {
+                    e.preventDefault();   // Stop form submission
+
+                    const errorMsg = document.getElementById('shiftError');
+                    if (errorMsg) {
+                        errorMsg.classList.remove('hidden');
+                        errorMsg.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }
+                }
+            });
+        }
+    });
+</script>
+
 </html>

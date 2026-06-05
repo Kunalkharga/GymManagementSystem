@@ -7,21 +7,14 @@ $admin_id = $_SESSION['admin_id'];
 $plans = $pdo->query("SELECT * FROM membership_plans WHERE admin_id = $admin_id ORDER BY price ASC")->fetchAll();
 
 if ($_POST) {
-    $photo = '';
-    if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
-        $target_dir = "../uploads/members/";
-        if (!is_dir($target_dir))
-            mkdir($target_dir, 0755, true);
-        $photo = time() . '_' . basename($_FILES['photo']['name']);
-        move_uploaded_file($_FILES['photo']['tmp_name'], $target_dir . $photo);
-    }
+    
 
     $stmt = $pdo->prepare("SELECT duration_months FROM membership_plans WHERE id = ?");
     $stmt->execute([$_POST['plan_id']]);
     $duration_months = $stmt->fetchColumn();
 
     $stmt = $pdo->prepare("INSERT INTO members 
-        (admin_id, full_name, phone, address, gender, age, photo, membership_plan_id, 
+        (admin_id, full_name, phone, address, gender, age, membership_plan_id, 
          start_date, expiry_date, emergency_contact, emergency_phone, height, weight, 
          goal, medical_conditions, blood_group, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 
@@ -34,7 +27,6 @@ if ($_POST) {
         sanitize($_POST['address']),
         $_POST['gender'],
         (int) $_POST['age'],
-        $photo,
         $_POST['plan_id'],
         $_POST['start_date'],
         $_POST['start_date'],
